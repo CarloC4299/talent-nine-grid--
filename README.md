@@ -30,4 +30,4 @@
 
 ## 作者
 
-苌圣泽（Carlo Chang）- HR从业者 & 独立开发者
+Carlo Chang - HR Practitioner & Independent Developer
