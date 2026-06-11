@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陆运事业部人才九宫格</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f0f2f5;
+  color: #1a1a2e;
+  min-height: 100vh;
+  padding: 24px;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1a1a2e, #2d3a5c);
+  color: white;
+  border-radius: 12px;
+  padding: 20px 28px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header-left h1 {
+  font-size: 20px;
+  font-weight: 600;
+}
+.header-left p {
+  margin-top: 4px;
+  opacity: 0.75;
+  font-size: 13px;
+}
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Import Panel */
+.import-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.import-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.import-panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.import-tabs { display: flex; gap: 4px; }
+.import-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  color: #666;
+  transition: all 0.2s;
+}
+.import-tab.active {
+  background: #1a1a2e;
+  color: white;
+  border-color: #1a1a2e;
+}
+.panel-actions { display: flex; gap: 8px; }
+.btn {
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: #1a1a2e;
+  color: white;
+}
+.btn-primary:hover { background: #2d3a5c; }
+.btn-outline {
+  background: white;
+  border: 1px solid #ddd;
+  color: #555;
+}
+.btn-outline:hover { background: #f5f5f5; }
+
+/* Import area */
+.import-area {
+  margin-top: 14px;
+  display: none;
+}
+.import-area.active { display: block; }
+
+/* Paste area */
+.paste-hint {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.paste-hint code {
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #555;
+}
+.paste-area {
+  width: 100%;
+  min-height: 80px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: monospace;
+  color: #333;
+  resize: vertical;
+  background: #fafafa;
+  transition: border-color 0.2s;
+}
+.paste-area:focus {
+  outline: none;
+  border-color: #1a1a2e;
+  background: white;
+}
+.paste-result {
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: none;
+}
+.paste-result.ok { display: block; background: #e8f5e9; color: #2e7d32; }
+.paste-result.err { display: block; background: #ffebee; color: #c62828; }
+
+/* Manual add form */
+.add-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+.form-group input {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #1a1a2e;
+}
+.form-group input[type=number] { text-align: center; }
+
+/* Employee list */
+.emp-list-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.emp-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.emp-list-header h3 { font-size: 14px; font-weight: 600; }
+.emp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.emp-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: #f5f7fa;
+  color: #555;
+  font-weight: 500;
+  font-size: 12px;
+  border-bottom: 2px solid #e8e8e8;
+}
+.emp-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+.emp-table tr:last-child td { border-bottom: none; }
+.emp-table .pool-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.pool-c1 { background: #e8f5e9; color: #2e7d32; }
+.pool-c2 { background: #e3f2fd; color: #1565c0; }
+.pool-c3 { background: #fff8e1; color: #f57f17; }
+.pool-c4 { background: #e3f2fd; color: #1976d2; }
+.pool-c5 { background: #f5f5f5; color: #616161; }
+.pool-c6 { background: #ffebee; color: #c62828; }
+.pool-c7 { background: #f3e5f5; color: #7b1fa2; }
+.pool-c8 { background: #efebe9; color: #5d4037; }
+.grid-pos {
+  font-size: 11px;
+  color: #888;
+}
+.del-btn {
+  color: #e53935;
+  cursor: pointer;
+  font-size: 16px;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.del-btn:hover { background: #ffebee; }
+.empty-list {
+  text-align: center;
+  padding: 24px;
+  color: #aaa;
+  font-size: 13px;
+}
+
+/* Main layout: grid + sidebar */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 270px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* 9-box grid */
+.grid-wrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.grid-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.grid-title span {
+  font-size: 11px;
+  background: #e8f0fe;
+  color: #1a73e8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 400;
+}
+.grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.grid-table th {
+  font-size: 12px;
+  color: #666;
+  padding: 5px 6px;
+  text-align: center;
+  font-weight: 500;
+}
+.grid-table th:first-child { width: 32px; }
+
+.y-label {
+  writing-mode: vertical-rl;
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.cell {
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+  vertical-align: top;
+  min-height: 95px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.cell:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 2;
+}
+.cell-pool {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 2px;
+}
+.cell-pos {
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.cell-count {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 10px;
+  background: rgba(255,255,255,0.25);
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-weight: 500;
+}
+.cell-emps {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+.emp-card {
+  background: rgba(255,255,255,0.92);
+  border-radius: 5px;
+  padding: 3px 6px;
+  font-size: 11px;
+  color: #333;
+  font-weight: 500;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.emp-card:hover {
+  background: white;
+}
+.emp-card .role { font-size: 9px; color: #888; font-weight: 400; }
+
+/* Pool colors */
+.c1 { background: linear-gradient(135deg, #2e7d32, #388e3c); }
+.c2 { background: linear-gradient(135deg, #1565c0, #1976d2); }
+.c3 { background: linear-gradient(135deg, #f57f17, #f9a825); }
+.c4 { background: linear-gradient(135deg, #0288d1, #03a9f4); }
+.c5 { background: linear-gradient(135deg, #616161, #757575); }
+.c6 { background: linear-gradient(135deg, #c62828, #e53935); }
+.c7 { background: linear-gradient(135deg, #7b1fa2, #9c27b0); }
+.c8 { background: linear-gradient(135deg, #5d4037, #6d4c41); }
+
+.axis-h {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a2e;
+  padding: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+.axis-h-inner {
+  display: block;
+  font-size: 10px;
+  color: #999;
+  font-weight: 400;
+}
+
+/* X axis labels */
+.x-labels {
+  display: flex;
+  margin-top: 2px;
+  padding: 0 0 0 32px;
+}
+.x-label-item {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+}
+.x-label-title {
+  text-align: center;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #bbb;
+  letter-spacing: 3px;
+}
+
+/* Sidebar */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+/* Pool legend */
+.pool-legend {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.pool-legend h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.legend-item:last-child { border-bottom: none; }
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.legend-text h4 { font-size: 12px; font-weight: 600; color: #333; }
+.legend-text p { font-size: 10px; color: #888; margin-top: 1px; }
+.legend-count {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  flex-shrink: 0;
+}
+.legend-total {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+.legend-total strong { font-size: 14px; color: #1a1a2e; }
+
+/* Score guide */
+.score-guide {
+  background: #fffde7;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.score-guide h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+}
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 11px;
+}
+.score-n { font-weight: 600; width: 26px; flex-shrink: 0; }
+.score-d { color: #777; }
+.s5 { color: #2e7d32; }
+.s4 { color: #1565c0; }
+.s3 { color: #f57f17; }
+.s2 { color: #e65100; }
+.s1 { color: #c62828; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 11px;
+  color: #bbb;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .add-form { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>陆运事业部 — 人才九宫格</h1>
+      <p>绩效（年度综合得分）× 潜力（成长性三问均分） | 仁承物流</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="exportData()">📥 导出数据</button>
+      <button class="btn btn-primary" onclick="document.getElementById('importPanel').scrollIntoView({behavior:'smooth'})">📋 导入数据</button>
+    </div>
+  </div>
+
+  <!-- Import Panel -->
+  <div class="import-panel" id="importPanel">
+    <div class="import-panel-top">
+      <h3>导入员工数据</h3>
+      <div class="import-tabs">
+        <button class="import-tab active" onclick="switchTab('paste',this)">粘贴导入</button>
+        <button class="import-tab" onclick="switchTab('add',this)">手动添加</button>
+      </div>
+    </div>
+
+    <!-- Paste tab -->
+    <div class="import-area active" id="tab-paste">
+      <div class="paste-hint">
+        从 Excel 复制数据粘贴到下方（支持 <code>Tab</code> 分隔列）。<br>
+        格式要求：<code>姓名</code> &nbsp;<code>岗位</code> &nbsp;<code>绩效得分(1-5)</code> &nbsp;<code>潜力均分(1-5)</code>，第一行可以是标题（自动跳过）。<br>
+        <strong>提示：</strong>在 Excel 中选中姓名列、岗位列、绩效列、潜力均分列，四列一起复制粘贴过来即可。
+      </div>
+      <textarea class="paste-area" id="pasteInput" placeholder="粘贴示例：&#10;张三&#9;操作&#9;4.2&#9;3.7&#10;李四&#9;配载&#9;3.5&#9;4.2&#10;王五&#9;费用录入&#9;3.0&#9;2.5"></textarea>
+      <div class="paste-result" id="pasteResult"></div>
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <button class="btn btn-primary" onclick="importPaste()">确认导入</button>
+        <button class="btn btn-outline" onclick="document.getElementById('pasteInput').value=''">清空</button>
+      </div>
+    </div>
+
+    <!-- Manual add tab -->
+    <div class="import-area" id="tab-add">
+      <div class="add-form" id="addForm">
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="fName" placeholder="如：张三">
+        </div>
+        <div class="form-group">
+          <label>岗位</label>
+          <input type="text" id="fJob" placeholder="如：操作">
+        </div>
+        <div class="form-group">
+          <label>绩效得分 *</label>
+          <input type="number" id="fPerf" min="1" max="5" step="0.1" placeholder="1-5">
+        </div>
+        <div class="form-group">
+          <label>潜力均分 *</label>
+          <input type="number" id="fPot" min="1" max="5" step="0.1" placeholder="1-5">
+        </div>
+        <button class="btn btn-primary" onclick="addEmployee()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee list -->
+  <div class="emp-list-panel">
+    <div class="emp-list-header">
+      <h3>员工盘点列表</h3>
+      <span id="empCount" style="font-size:12px;color:#888;"></span>
+    </div>
+    <div id="empListContent">
+      <div class="empty-list">暂无数据，请通过上方导入</div>
+    </div>
+  </div>
+
+  <!-- Main: Grid + Sidebar -->
+  <div class="layout">
+
+    <!-- 9-box grid -->
+    <div class="grid-wrapper">
+      <div class="grid-title">
+        九宫格定位
+        <span id="gridStatus">—</span>
+      </div>
+
+      <table class="grid-table">
+        <colgroup>
+          <col style="width:32px">
+          <col style="width:33%">
+          <col style="width:34%">
+          <col style="width:33%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th rowspan="3"><span class="y-label">潜&nbsp;力</span></th>
+            <th class="axis-h">潜力高<span class="axis-h-inner">均分 ≥ 4.0</span></th>
+            <th class="axis-h">潜力中<span class="axis-h-inner">均分 2.0–3.9</span></th>
+            <th class="axis-h">潜力低<span class="axis-h-inner">均分 &lt; 2.0</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="axis-h">绩效高<span class="axis-h-inner">≥ 4.0</span></td>
+            <td class="cell c1" id="cell-a1"><div class="cell-pool">核心保留池</div><div class="cell-pos">A1</div><div class="cell-count" id="cnt-a1">0</div><div class="cell-emps" id="emps-a1"></div></td>
+            <td class="cell c2" id="cell-a2"><div class="cell-pool">骨干稳定池</div><div class="cell-pos">A2</div><div class="cell-count" id="cnt-a2">0</div><div class="cell-emps" id="emps-a2"></div></td>
+            <td class="cell c3" id="cell-a3"><div class="cell-pool">熟练执行池</div><div class="cell-pos">A3</div><div class="cell-count" id="cnt-a3">0</div><div class="cell-emps" id="emps-a3"></div></td>
+          </tr>
+          <tr>
+            <td class="axis-h">绩效中<span class="axis-h-inner">3.0–3.9</span></td>
+            <td class="cell c4" id="cell-b1"><div class="cell-pool">加速培养池</div><div class="cell-pos">B1</div><div class="cell-count" id="cnt-b1">0</div><div class="cell-emps" id="emps-b1"></div></td>
+            <td class="cell c5" id="cell-b2"><div class="cell-pool">观察待定池</div><div class="cell-pos">B2</div><div class="cell-count" id="cnt-b2">0</div><div class="cell-emps" id="emps-b2"></div></td>
+            <td class="cell c6" id="cell-b3"><div class="cell-pool">降本优化池</div><div class="cell-pos">B3</div><div class="cell-count" id="cnt-b3">0</div><div class="cell-emps" id="emps-b3"></div></td>
+          </tr>
+          <tr>
+            <td class="axis-h">绩效低<span class="axis-h-inner">&lt; 3.0</span></td>
+            <td class="cell c7" id="cell-c1"><div class="cell-pool">特殊关注池</div><div class="cell-pos">C1</div><div class="cell-count" id="cnt-c1">0</div><div class="cell-emps" id="emps-c1"></div></td>
+            <td class="cell c8" id="cell-c2"><div class="cell-pool">优化调整池</div><div class="cell-pos">C2</div><div class="cell-count" id="cnt-c2">0</div><div class="cell-emps" id="emps-c2"></div></td>
+            <td class="cell c9" id="cell-c3"><div class="cell-pool">优化调整池</div><div class="cell-pos">C3</div><div class="cell-count" id="cnt-c3">0</div><div class="cell-emps" id="emps-c3"></div></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="x-labels">
+        <div class="x-label-item">绩效高</div>
+        <div class="x-label-item">绩效中</div>
+        <div class="x-label-item">绩效低</div>
+      </div>
+      <div class="x-label-title">绩 效</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Pool legend with counts -->
+      <div class="pool-legend">
+        <h3>人才池 · 汇总</h3>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2e7d32"></div>
+          <div class="legend-text"><h4>核心保留池</h4><p>重点激励 · 晋升优先</p></div>
+          <div class="legend-count" id="tot-c1">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#1565c0"></div>
+          <div class="legend-text"><h4>骨干稳定池</h4><p>保持激励 · 项目参与</p></div>
+          <div class="legend-count" id="tot-c2">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0288d1"></div>
+          <div class="legend-text"><h4>加速培养池</h4><p>导师带教 · 半年跟进</p></div>
+          <div class="legend-count" id="tot-c4">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#5d4037"></div>
+          <div class="legend-text"><h4>熟练执行池</h4><p>维持岗位 · 避免倦怠</p></div>
+          <div class="legend-count" id="tot-c3">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#616161"></div>
+          <div class="legend-text"><h4>观察待定池</h4><p>深入了解 · 再定方向</p></div>
+          <div class="legend-count" id="tot-c5">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#c62828"></div>
+          <div class="legend-text"><h4>优化调整池</h4><p>PIP/换岗 · 不再补充</p></div>
+          <div class="legend-count" id="tot-c6">0</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#7b1fa2"></div>
+          <div class="legend-text"><h4>特殊关注池</h4><p>了解原因 · 针对性干预</p></div>
+          <div class="legend-count" id="tot-c7">0</div>
+        </div>
+        <div class="legend-total">
+          <span>合计</span>
+          <strong id="grandTotal">0</strong>
+        </div>
+      </div>
+
+      <!-- Score guide -->
+      <div class="score-guide">
+        <h4>潜力三问 · 5分参考</h4>
+        <div class="score-row"><span class="score-n s5">5分</span><span class="score-d">极快自学，团队学习标杆</span></div>
+        <div class="score-row"><span class="score-n s4">4分</span><span class="score-d">学得快，能给团队启发</span></div>
+        <div class="score-row"><span class="score-n s3">3分</span><span class="score-d">正常学习，需指导</span></div>
+        <div class="score-row"><span class="score-n s2">2分</span><span class="score-d">需较多指导，速度慢</span></div>
+        <div class="score-row"><span class="score-n s1">1分</span><span class="score-d">反复指导仍难上手</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    工具：人才盘点工具 Excel + 九宫格可视化 | 仁承物流陆运事业部
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const POOL_INFO = {
+  A1: { cls: 'c1', pool: '核心保留池', poolCls: 'pool-c1' },
+  A2: { cls: 'c2', pool: '骨干稳定池', poolCls: 'pool-c2' },
+  A3: { cls: 'c3', pool: '熟练执行池', poolCls: 'pool-c3' },
+  B1: { cls: 'c4', pool: '加速培养池', poolCls: 'pool-c4' },
+  B2: { cls: 'c5', pool: '观察待定池', poolCls: 'pool-c5' },
+  B3: { cls: 'c6', pool: '降本优化池', poolCls: 'pool-c6' },
+  C1: { cls: 'c7', pool: '特殊关注池', poolCls: 'pool-c7' },
+  C2: { cls: 'c8', pool: '优化调整池', poolCls: 'pool-c8' },
+  C3: { cls: 'c8', pool: '优化调整池', poolCls: 'pool-c8' },
+};
+
+let employees = JSON.parse(localStorage.getItem('talentGrid') || '[]');
+
+// ── Compute ──────────────────────────────────────────────────────────────────
+function getCell(emp) {
+  var perf = parseFloat(emp.perf);
+  var pot  = parseFloat(emp.pot);
+  if (isNaN(perf) || isNaN(pot)) return null;
+  var pLvl = perf >= 4 ? 'A' : perf >= 3 ? 'B' : 'C';
+  var gLvl = pot  >= 4.0 ? '1' : pot >= 2.0 ? '2' : '3';
+  return pLvl + gLvl;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  // Build per-cell map
+  var cells = { A1:[], A2:[], A3:[], B1:[], B2:[], B3:[], C1:[], C2:[], C3:[] };
+  var poolCounts = { c1:0, c2:0, c3:0, c4:0, c5:0, c6:0, c7:0, c8:0 };
+  employees.forEach(function(emp) {
+    var cell = getCell(emp);
+    if (cell && cells[cell]) {
+      cells[cell].push(emp);
+      var info = POOL_INFO[cell];
+      if (info) poolCounts[info.cls.replace('c','c')]++;
+    }
+  });
+
+  // Update grid cells
+  Object.keys(cells).forEach(function(key) {
+    var el = document.getElementById('emps-' + key.toLowerCase().replace('A','a').replace('B','b').replace('C','c'));
+    var cntEl = document.getElementById('cnt-' + key.toLowerCase().replace('A','a').replace('B','b').replace('C','c'));
+    if (!el || !cntEl) return;
+    el.innerHTML = '';
+    cntEl.textContent = cells[key].length;
+    cells[key].forEach(function(emp) {
+      var div = document.createElement('div');
+      div.className = 'emp-card';
+      div.title = emp.name + ' | ' + (emp.job||'') + ' | 绩效:' + emp.perf + ' 潜力:' + emp.pot;
+      div.innerHTML = emp.name + (emp.job ? '<span class="role"> · '+emp.job+'</span>' : '');
+      el.appendChild(div);
+    });
+  });
+
+  // Update sidebar counts
+  var pools = ['c1','c2','c4','c3','c5','c6','c7','c8'];
+  pools.forEach(function(p) {
+    var el = document.getElementById('tot-' + p);
+    if (el) el.textContent = poolCounts[p] || 0;
+  });
+  var gt = document.getElementById('grandTotal');
+  if (gt) gt.textContent = employees.length;
+
+  // Update status
+  var statusEl = document.getElementById('gridStatus');
+  if (statusEl) {
+    statusEl.textContent = employees.length > 0
+      ? employees.length + ' 人已导入'
+      : '—';
+    statusEl.style.background = employees.length > 0 ? '#e8f5e9' : '#e8f0fe';
+    statusEl.style.color = employees.length > 0 ? '#2e7d32' : '#1a73e8';
+  }
+
+  // Render employee list
+  renderEmpList();
+
+  // Save
+  localStorage.setItem('talentGrid', JSON.stringify(employees));
+}
+
+function renderEmpList() {
+  var container = document.getElementById('empListContent');
+  var countEl = document.getElementById('empCount');
+  if (!container) return;
+  countEl.textContent = employees.length + ' 人';
+
+  if (employees.length === 0) {
+    container.innerHTML = '<div class="empty-list">暂无数据，请通过上方导入</div>';
+    return;
+  }
+
+  // Sort by cell position
+  var order = {A1:1,A2:2,A3:3,B1:4,B2:5,B3:6,C1:7,C2:8,C3:9};
+  var sorted = employees.slice().sort(function(a,b){
+    var ca = getCell(a)||'Z', cb = getCell(b)||'Z';
+    return (order[ca]||99) - (order[cb]||99);
+  });
+
+  var rows = sorted.map(function(emp){
+    var cell = getCell(emp) || '?';
+    var info = POOL_INFO[cell] || {pool:'未分类', poolCls:'pool-c5'};
+    return '<tr>' +
+      '<td><strong>' + escHtml(emp.name) + '</strong></td>' +
+      '<td>' + escHtml(emp.job||'—') + '</td>' +
+      '<td style="text-align:center">' + emp.perf + '</td>' +
+      '<td style="text-align:center">' + emp.pot + '</td>' +
+      '<td><span class="pool-tag ' + info.poolCls + '">' + info.pool + '</span></td>' +
+      '<td><span class="grid-pos">' + cell + '</span></td>' +
+      '<td><button class="del-btn" onclick="delEmp(\'' + escHtml(emp.name) + '\')" title="删除">×</button></td>' +
+      '</tr>';
+  }).join('');
+
+  container.innerHTML = '<table class="emp-table">' +
+    '<thead><tr><th>姓名</th><th>岗位</th><th>绩效</th><th>潜力均分</th><th>人才池</th><th>位置</th><th></th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table>';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.import-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.import-area').forEach(function(a){ a.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function importPaste() {
+  var raw = document.getElementById('pasteInput').value.trim();
+  if (!raw) {
+    showResult('请先粘贴数据', false);
+    return;
+  }
+  var lines = raw.split('\n').filter(function(l){ return l.trim(); });
+  var added = 0, skipped = 0, errors = [];
+  lines.forEach(function(line, idx) {
+    // Split by tab, comma, or multiple spaces
+    var parts = line.split(/[\t,，]+/).map(function(p){ return p.trim(); });
+    if (parts.length < 4) {
+      // Try space-separated
+      parts = line.split(/\s{2,}/).map(function(p){ return p.trim(); });
+    }
+    if (parts.length < 4) {
+      errors.push('第' + (idx+1) + '行：字段不足（需要4列）');
+      skipped++;
+      return;
+    }
+    var name = parts[0];
+    var job  = parts[1] || '';
+    var perf = parseFloat(parts[2]);
+    var pot  = parseFloat(parts[3]);
+    if (!name || isNaN(perf) || isNaN(pot)) {
+      errors.push('第' + (idx+1) + '行：数据格式有误');
+      skipped++;
+      return;
+    }
+    // Skip header-like rows
+    if (name === '姓名' || name === 'name' || !isNaN(parseFloat(name))) {
+      skipped++;
+      return;
+    }
+    employees.push({ name: name, job: job, perf: perf, pot: pot });
+    added++;
+  });
+
+  if (added > 0) {
+    showResult('成功导入 ' + added + ' 人！' + (skipped > 0 ? '（' + skipped + ' 行跳过）' : ''), true);
+    render();
+    document.getElementById('pasteInput').value = '';
+  } else {
+    showResult('导入失败：' + errors[0], false);
+  }
+}
+
+function showResult(msg, ok) {
+  var el = document.getElementById('pasteResult');
+  el.textContent = msg;
+  el.className = 'paste-result ' + (ok ? 'ok' : 'err');
+}
+
+function addEmployee() {
+  var name = document.getElementById('fName').value.trim();
+  var job  = document.getElementById('fJob').value.trim();
+  var perf = parseFloat(document.getElementById('fPerf').value);
+  var pot  = parseFloat(document.getElementById('fPot').value);
+  if (!name || isNaN(perf) || isNaN(pot)) {
+    alert('请填写姓名、绩效得分和潜力均分（数值1-5）');
+    return;
+  }
+  if (perf < 1 || perf > 5 || pot < 1 || pot > 5) {
+    alert('绩效和潜力均分需在 1-5 之间');
+    return;
+  }
+  employees.push({ name: name, job: job, perf: perf, pot: pot });
+  document.getElementById('fName').value = '';
+  document.getElementById('fJob').value  = '';
+  document.getElementById('fPerf').value = '';
+  document.getElementById('fPot').value  = '';
+  document.getElementById('fName').focus();
+  render();
+}
+
+function delEmp(name) {
+  employees = employees.filter(function(e){ return e.name !== name; });
+  render();
+}
+
+function exportData() {
+  if (employees.length === 0) {
+    alert('暂无数据可导出');
+    return;
+  }
+  var header = '姓名\t岗位\t绩效得分\t潜力均分\t九宫格位置\t人才池\n';
+  var rows = employees.map(function(emp) {
+    var cell = getCell(emp) || '?';
+    var info = POOL_INFO[cell] || {pool:''};
+    return emp.name + '\t' + (emp.job||'') + '\t' + emp.perf + '\t' + emp.pot + '\t' + cell + '\t' + info.pool;
+  }).join('\n');
+  var blob = new Blob(['\ufeff' + header + rows], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '人才盘点_九宫格_' + new Date().toLocaleDateString('zh-CN').replace(/\//g,'-') + '.csv';
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
